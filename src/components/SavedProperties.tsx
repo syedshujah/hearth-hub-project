@@ -1,9 +1,29 @@
 import PropertyCard from "@/components/PropertyCard";
 import { dummyProperties } from "@/data/properties";
+import { useEffect, useState } from "react";
 
 const SavedProperties = () => {
-  // Mock saved properties (first 3 properties)
-  const savedProperties = dummyProperties.slice(0, 3);
+  const storageKey = "savedPropertyIds";
+  const [savedIds, setSavedIds] = useState<number[]>([]);
+
+  const loadSaved = () => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      const ids: number[] = raw ? JSON.parse(raw) : [];
+      setSavedIds(ids);
+    } catch {
+      setSavedIds([]);
+    }
+  };
+
+  useEffect(() => {
+    loadSaved();
+    const handler = () => loadSaved();
+    window.addEventListener("saved-properties-changed", handler);
+    return () => window.removeEventListener("saved-properties-changed", handler);
+  }, []);
+
+  const savedProperties = dummyProperties.filter(p => savedIds.includes(p.id));
 
   return (
     <div className="space-y-6">

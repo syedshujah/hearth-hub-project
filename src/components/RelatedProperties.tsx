@@ -1,13 +1,16 @@
 import PropertyCard from "@/components/PropertyCard";
-import { dummyProperties } from "@/data/properties";
+import { useAppSelector } from "@/store/hooks";
+import { selectApprovedProperties } from "@/store/selectors";
 
 interface RelatedPropertiesProps {
-  currentPropertyId: number;
+  currentPropertyId: string;
 }
 
 const RelatedProperties = ({ currentPropertyId }: RelatedPropertiesProps) => {
+  const properties = useAppSelector(selectApprovedProperties);
+  
   // Get related properties (excluding current property)
-  const relatedProperties = dummyProperties
+  const relatedProperties = properties
     .filter(property => property.id !== currentPropertyId)
     .slice(0, 3);
 

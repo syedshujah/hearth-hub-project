@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import PropertyCard from "@/components/PropertyCard";
-import { dummyProperties } from "@/data/properties";
+import { useAppSelector } from "@/store/hooks";
+import { selectFeaturedProperties } from "@/store/selectors";
 
 const FeaturedProperties = () => {
-  const featuredProperties = dummyProperties.filter(property => property.featured).slice(0, 3);
+  const featuredProperties = useAppSelector(selectFeaturedProperties).slice(0, 3);
 
   return (
     <section className="py-20 bg-background">
@@ -20,11 +21,19 @@ const FeaturedProperties = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {featuredProperties.map((property) => (
-            <div key={property.id} className="animate-fade-in">
-              <PropertyCard property={property} />
+          {featuredProperties.length > 0 ? (
+            featuredProperties.map((property) => (
+              <div key={property.id} className="animate-fade-in">
+                <PropertyCard property={property} />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">
+                No featured properties available. Add some properties to get started!
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="text-center">

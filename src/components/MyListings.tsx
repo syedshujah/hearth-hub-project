@@ -1,86 +1,133 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { MoreHorizontal, Edit, Trash2, Eye, MapPin, Bed, Bath, Square } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserProperties, deleteProperty, Property } from "@/services/propertyService";
+import { MoreHorizontal, Edit, Trash2, Eye, MapPin, Bed, Bath, Square, Loader2 } from "lucide-react";
 
 const MyListings = () => {
   const { toast } = useToast();
-  
-  // Mock user listings data
-  const [listings, setListings] = useState([
-    {
-      id: 1,
-      title: "Modern Downtown Apartment",
-      location: "Manhattan, NY",
-      price: 3500,
-      status: "for-rent",
-      bedrooms: 2,
-      bathrooms: 2,
-      area: 1200,
-      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=300&h=200&fit=crop",
-      views: 234,
-      inquiries: 12,
-      dateAdded: "2024-01-20"
-    },
-    {
-      id: 2,
-      title: "Suburban Family House",
-      location: "Austin, TX",
-      price: 450000,
-      status: "for-sale",
-      bedrooms: 4,
-      bathrooms: 3,
-      area: 2800,
-      image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=300&h=200&fit=crop",
-      views: 89,
-      inquiries: 5,
-      dateAdded: "2024-01-15"
-    },
-    {
-      id: 3,
-      title: "Luxury Beach Villa",
-      location: "Miami, FL",
-      price: 1200000,
-      status: "for-sale",
-      bedrooms: 5,
-      bathrooms: 4,
-      area: 4200,
-      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=300&h=200&fit=crop",
-      views: 456,
-      inquiries: 23,
-      dateAdded: "2024-01-10"
-    }
-  ]);
+  const { user } = useAuth();
+  const [listings, setListings] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const formatPrice = (price: number, status: string) => {
-    if (status === "for-rent") {
-      return `$${price.toLocaleString()}/month`;
-    }
+  useEffect(() => {
+    const fetchUserProperties = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await getUserProperties();
+        
+        if (error) {
+          toast({
+            title: "Error Loading Properties",
+            description: error,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (data) {
+          setListings(data);
+        }
+      } catch (error) {
+        toast({
+          title: "Error Loading Properties",
+          description: "Failed to fetch your properties",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProperties();
+  }, [user, toast]);
+
+  const formatPrice = (price: number) => {
     return `$${price.toLocaleString()}`;
   };
 
-  const handleEdit = (id: number) => {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-500">Published</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-500">Under Review</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-500">Rejected</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  const handleEdit = (id: string) => {
     toast({
       title: "Edit Property",
       description: "Edit functionality will be implemented.",
     });
   };
 
-  const handleDelete = (id: number) => {
-    setListings(prev => prev.filter(listing => listing.id !== id));
-    toast({
-      title: "Property Deleted",
-      description: "Your property has been removed from listings.",
-      variant: "destructive"
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await deleteProperty(id);
+      
+      if (error) {
+        toast({
+          title: "Error Deleting Property",
+          description: error,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setListings(prev => prev.filter(listing => listing.id !== id));
+      toast({
+        title: "Property Deleted",
+        description: "Your property has been removed from listings.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Deleting Property",
+        description: "Failed to delete property",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleView = (id: number) => {
+  const handleView = (id: string) => {
     window.open(`/property/${id}`, '_blank');
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="animate-spin h-8 w-8 text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading your properties...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <div className="property-card p-8">
+          <h3 className="text-xl font-semibold text-foreground mb-2">Sign In Required</h3>
+          <p className="text-muted-foreground mb-4">
+            Please sign in to view your property listings.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -97,7 +144,7 @@ const MyListings = () => {
                 {/* Property Image */}
                 <div className="md:w-64 flex-shrink-0">
                   <img
-                    src={listing.image}
+                    src={listing.images && listing.images.length > 0 ? listing.images[0] : "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=300&h=200&fit=crop"}
                     alt={listing.title}
                     className="w-full h-48 md:h-32 object-cover rounded-lg"
                   />
@@ -115,14 +162,12 @@ const MyListings = () => {
                         <span>{listing.location}</span>
                       </div>
                       <div className="text-2xl font-bold text-primary mb-2">
-                        {formatPrice(listing.price, listing.status)}
+                        {formatPrice(listing.price)}
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <Badge className={listing.status === "for-sale" ? "bg-success" : "bg-info"}>
-                        {listing.status === "for-sale" ? "For Sale" : "For Rent"}
-                      </Badge>
+                      {getStatusBadge(listing.status)}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="icon">
@@ -170,16 +215,16 @@ const MyListings = () => {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex space-x-6">
                       <div>
-                        <span className="font-semibold text-primary">{listing.views}</span>
+                        <span className="font-semibold text-primary">{listing.views || 0}</span>
                         <span className="text-muted-foreground ml-1">views</span>
                       </div>
                       <div>
-                        <span className="font-semibold text-secondary">{listing.inquiries}</span>
+                        <span className="font-semibold text-secondary">0</span>
                         <span className="text-muted-foreground ml-1">inquiries</span>
                       </div>
                     </div>
                     <div className="text-muted-foreground">
-                      Listed on {new Date(listing.dateAdded).toLocaleDateString()}
+                      Listed on {new Date(listing.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>

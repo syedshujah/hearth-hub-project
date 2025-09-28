@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Property } from "@/data/properties";
+import { Property } from "@/store/propertySlice";
 import { Filter, X } from "lucide-react";
 
 interface PropertyFiltersProps {
@@ -33,18 +33,19 @@ const PropertyFilters = ({ onFilterChange, allProperties }: PropertyFiltersProps
   
   // Extract unique features from all properties
   const allFeatures = Array.from(
-    new Set(allProperties.flatMap(p => p.features))
+    new Set(allProperties.flatMap(p => p.amenities || []))
   ).sort();
 
   const applyFilters = () => {
     let filtered = [...allProperties];
 
     if (filters.type) {
-      filtered = filtered.filter(p => p.type === filters.type);
+      filtered = filtered.filter(p => p.property_type === filters.type);
     }
 
     if (filters.status) {
-      filtered = filtered.filter(p => p.status === filters.status);
+      // For now, we'll just filter by approved status since that's what we have
+      filtered = filtered.filter(p => p.status === 'approved');
     }
 
     if (filters.location) {
@@ -77,7 +78,7 @@ const PropertyFilters = ({ onFilterChange, allProperties }: PropertyFiltersProps
 
     if (filters.features.length > 0) {
       filtered = filtered.filter(p => 
-        filters.features.some(feature => p.features.includes(feature))
+        filters.features.some(feature => p.amenities && p.amenities.includes(feature))
       );
     }
 

@@ -2,8 +2,26 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import { dummyBlogPosts } from "@/data/blog";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const BlogPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const [category, setCategory] = useState<string>(search.get("category") || "");
+
+  useEffect(() => {
+    const next = new URLSearchParams(location.search);
+    if (category) next.set("category", category); else next.delete("category");
+    navigate({ search: next.toString() }, { replace: true });
+  }, [category]);
+
+  const posts = useMemo(() => {
+    if (!category) return dummyBlogPosts;
+    return dummyBlogPosts.filter(p => p.category === category);
+  }, [category]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -18,8 +36,8 @@ const BlogPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {dummyBlogPosts.map((post) => (
-                <BlogCard key={post.id} post={post} />
+              {posts.map((post) => (
+                <BlogCard key={post.id} post={post} onCategoryClick={(c) => setCategory(c)} />
               ))}
             </div>
           </div>

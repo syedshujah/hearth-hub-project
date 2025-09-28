@@ -1,4 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { dummyBlogPosts } from "@/data/blog";
@@ -6,7 +8,10 @@ import { Calendar, User, Tag } from "lucide-react";
 
 const BlogDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const post = dummyBlogPosts.find(p => p.id === parseInt(id || "0"));
+  const sorted = [...dummyBlogPosts].sort((a, b) => a.id - b.id);
+  const idx = sorted.findIndex(p => p.id === (post?.id ?? -1));
 
   if (!post) {
     return (
@@ -24,6 +29,17 @@ const BlogDetails = () => {
       </div>
     );
   }
+
+  // Keyboard navigation between posts (Left/Right)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (idx < 0) return;
+      if (e.key === "ArrowLeft" && idx > 0) navigate(`/blog/${sorted[idx - 1].id}`);
+      if (e.key === "ArrowRight" && idx < sorted.length - 1) navigate(`/blog/${sorted[idx + 1].id}`);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [idx]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +66,7 @@ const BlogDetails = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4" />
-                    <span>{post.category}</span>
+                    <span className="cursor-pointer underline-offset-2 hover:underline" onClick={() => navigate(`/blog?category=${encodeURIComponent(post.category)}`)}>{post.category}</span>
                   </div>
                 </div>
 
@@ -59,6 +75,8 @@ const BlogDetails = () => {
               </div>
 
               <div className="prose prose-lg max-w-none">
+                <p className="text-foreground leading-relaxed mb-6">{post.content}</p>
+
                 <p className="text-foreground leading-relaxed mb-6">
                   Real estate markets are constantly evolving, and staying informed about the latest 
                   trends is crucial for both buyers and sellers. In this comprehensive guide, we'll 

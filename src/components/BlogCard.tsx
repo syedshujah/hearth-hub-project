@@ -6,9 +6,10 @@ import { Calendar, User, Clock } from "lucide-react";
 
 interface BlogCardProps {
   post: BlogPost;
+  onCategoryClick?: (category: string) => void;
 }
 
-const BlogCard = ({ post }: BlogCardProps) => {
+const BlogCard = ({ post, onCategoryClick }: BlogCardProps) => {
   return (
     <div className="property-card group">
       <div className="relative overflow-hidden rounded-t-xl">
@@ -18,7 +19,7 @@ const BlogCard = ({ post }: BlogCardProps) => {
           className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute top-4 left-4">
-          <Badge className="bg-primary text-white">
+          <Badge className="bg-primary text-white" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCategoryClick?.(post.category); }}>
             {post.category}
           </Badge>
         </div>

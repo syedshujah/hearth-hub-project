@@ -13,12 +13,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: "users", label: "Manage Users", icon: Users },
     { id: "properties", label: "Manage Properties", icon: Building2 },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (
     <Sidebar className="w-64">
       <SidebarContent>
-        {/* Logo */}
         <div className="p-6 border-b">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

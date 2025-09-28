@@ -28,6 +28,18 @@ const ContactPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Basic validation before submit
+    const emailValid = /.+@.+\..+/.test(formData.email);
+    const phoneValid = !formData.phone || /[\d+()\-\s]{7,}/.test(formData.phone);
+    if (!emailValid) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address." });
+      return;
+    }
+    if (!phoneValid) {
+      toast({ title: "Invalid phone number", description: "Please enter a valid phone number or leave it blank." });
+      return;
+    }
+
     setLoading(true);
 
     // Simulate form submission
@@ -69,6 +81,12 @@ const ContactPage = () => {
       details: ["Mon - Fri: 9:00 AM - 6:00 PM", "Sat - Sun: 10:00 AM - 4:00 PM"]
     }
   ];
+
+  // Helpers for actionable contact details
+  const formatPhoneForDial = (phone: string) => phone.replace(/[^+\d]/g, "");
+  const openTel = (num: string) => window.open(`tel:${formatPhoneForDial(num)}`);
+  const openMail = (addr: string) => window.open(`mailto:${addr}`);
+  const openMap = (address: string) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, "_blank");
 
   return (
     <div className="min-h-screen bg-background">
@@ -174,7 +192,15 @@ const ContactPage = () => {
                           {info.title}
                         </h3>
                         {info.details.map((detail, idx) => (
-                          <p key={idx} className="text-muted-foreground">
+                          <p
+                            key={idx}
+                            className="text-muted-foreground"
+                            onClick={() => {
+                              if (info.title === "Phone Number") openTel(detail);
+                              else if (info.title === "Email Address") openMail(detail);
+                              else if (info.title === "Office Address") openMap(detail);
+                            }}
+                          >
                             {detail}
                           </p>
                         ))}
@@ -189,10 +215,14 @@ const ContactPage = () => {
             <div className="mt-16">
               <div className="property-card p-8">
                 <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Find Our Office</h2>
-                <div className="bg-muted rounded-lg h-64 flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    Interactive map will be integrated here
-                  </p>
+                <div className="bg-muted rounded-lg h-64 overflow-hidden">
+                  <iframe
+                    title="Office location map"
+                    className="w-full h-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps?q=${encodeURIComponent('123 Real Estate Avenue, Property City, PC 12345')}&hl=en&z=14&output=embed`}
+                  />
                 </div>
               </div>
             </div>

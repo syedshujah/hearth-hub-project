@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import PropertyCard from "@/components/PropertyCard";
-import { dummyProperties } from "@/data/properties";
+import { useAppSelector } from "@/store/hooks";
+import { selectRecentProperties } from "@/store/selectors";
 
 const LatestListings = () => {
-  // Sort by date added and take the latest 4
-  const latestProperties = [...dummyProperties]
-    .sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime())
-    .slice(0, 4);
+  // Get the latest 4 properties from Redux
+  const latestProperties = useAppSelector(selectRecentProperties).slice(0, 4);
 
   return (
     <section className="py-20 bg-muted/30">
@@ -23,15 +22,23 @@ const LatestListings = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {latestProperties.map((property, index) => (
-            <div 
-              key={property.id} 
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <PropertyCard property={property} />
+          {latestProperties.length > 0 ? (
+            latestProperties.map((property, index) => (
+              <div 
+                key={property.id} 
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <PropertyCard property={property} />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">
+                No properties available yet. Be the first to add a property!
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="text-center">

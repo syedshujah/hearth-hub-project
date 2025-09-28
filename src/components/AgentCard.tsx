@@ -28,6 +28,18 @@ const AgentCard = ({ agent }: AgentCardProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const formatPhoneForDial = (phone: string) => phone.replace(/[^+\d]/g, "");
+  const openTel = () => {
+    const tel = `tel:${formatPhoneForDial(agent.phone)}`;
+    window.open(tel);
+  };
+  const openWhatsApp = () => {
+    const number = formatPhoneForDial(agent.phone).replace(/^\+/, "");
+    const text = encodeURIComponent(`Hello ${agent.name}, I'm interested in the property.`);
+    const url = `https://wa.me/${number}?text=${text}`;
+    window.open(url, "_blank");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -75,11 +87,11 @@ const AgentCard = ({ agent }: AgentCardProps) => {
             <span className="text-muted-foreground">{agent.email}</span>
           </div>
           <div className="grid grid-cols-2 gap-2 pt-4">
-            <Button size="sm" className="w-full">
+            <Button size="sm" className="w-full" onClick={openTel}>
               <Phone className="w-4 h-4 mr-2" />
               Call
             </Button>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="sm" className="w-full" onClick={openWhatsApp}>
               <MessageCircle className="w-4 h-4 mr-2" />
               WhatsApp
             </Button>

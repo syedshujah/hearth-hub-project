@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PropertyCard from "@/components/PropertyCard";
-import { Property } from "@/data/properties";
+import { Property } from "@/store/propertySlice";
 import { Grid, List, SortAsc } from "lucide-react";
 
 interface PropertyGridProps {
   properties: Property[];
 }
-
 const PropertyGrid = ({ properties }: PropertyGridProps) => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("newest");
@@ -23,9 +22,9 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
       case "price-high":
         return b.price - a.price;
       case "newest":
-        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       case "oldest":
-        return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       case "bedrooms":
         return b.bedrooms - a.bedrooms;
       case "area":

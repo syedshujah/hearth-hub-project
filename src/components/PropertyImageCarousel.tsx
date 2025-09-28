@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
@@ -9,31 +9,69 @@ interface PropertyImageCarouselProps {
 const PropertyImageCarousel = ({ images }: PropertyImageCarouselProps) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  // Fallback images if none provided
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop",
+    "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&h=600&fit=crop"
+  ];
+
+  const displayImages = images && images.length > 0 ? images : fallbackImages;
 
   const nextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % images.length);
+    setCurrentImage((prev) => (prev + 1) % displayImages.length);
   };
 
   const prevImage = () => {
-    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
   };
 
   const goToImage = (index: number) => {
     setCurrentImage(index);
   };
 
+  // Keyboard navigation while fullscreen
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") nextImage();
+      else if (e.key === "ArrowLeft") prevImage();
+      else if (e.key === "Escape") setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isFullscreen, displayImages.length]);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0]?.clientX ?? null);
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
+    const threshold = 40; // pixels
+    if (dx > threshold) {
+      prevImage();
+    } else if (dx < -threshold) {
+      nextImage();
+    }
+    setTouchStartX(null);
+  };
+
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative group">
+      <div className="relative group" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <img
-          src={images[currentImage]}
+          src={displayImages[currentImage]}
           alt={`Property image ${currentImage + 1}`}
           className="w-full h-96 object-cover rounded-lg"
         />
         
         {/* Navigation Arrows */}
-        {images.length > 1 && (
+        {displayImages.length > 1 && (
           <>
             <Button
               variant="outline"
@@ -65,17 +103,17 @@ const PropertyImageCarousel = ({ images }: PropertyImageCarouselProps) => {
         </Button>
 
         {/* Image Counter */}
-        {images.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-lg text-sm">
-            {currentImage + 1} / {images.length}
+            {currentImage + 1} / {displayImages.length}
           </div>
         )}
       </div>
 
       {/* Thumbnail Navigation */}
-      {images.length > 1 && (
+      {displayImages.length > 1 && (
         <div className="flex space-x-2 overflow-x-auto pb-2">
-          {images.map((image, index) => (
+          {displayImages.map((image, index) => (
             <button
               key={index}
               onClick={() => goToImage(index)}
@@ -98,11 +136,12 @@ const PropertyImageCarousel = ({ images }: PropertyImageCarouselProps) => {
       {/* Fullscreen Modal */}
       {isFullscreen && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl max-h-full">
+          <div className="relative max-w-4xl max-h-full" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             <img
-              src={images[currentImage]}
+              src={displayImages[currentImage]}
               alt={`Property image ${currentImage + 1}`}
-              className="max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full object-contain select-none"
+              draggable={false}
             />
             
             {/* Close Button */}
@@ -116,7 +155,7 @@ const PropertyImageCarousel = ({ images }: PropertyImageCarouselProps) => {
             </Button>
 
             {/* Navigation in Fullscreen */}
-            {images.length > 1 && (
+            {displayImages.length > 1 && (
               <>
                 <Button
                   variant="outline"
