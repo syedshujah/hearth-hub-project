@@ -12,10 +12,11 @@ interface AuthModalProps {
 const AuthModal = ({ isOpen, onClose, defaultMode = "login" }: AuthModalProps) => {
   const [mode, setMode] = useState<"login" | "signup">(defaultMode);
 
-  // jab modal band ho to reset ho jaye
+  // Keep modal mode in sync with defaultMode whenever it changes
+  // and also set it correctly each time the modal opens.
   useEffect(() => {
-    if (!isOpen) {
-      setMode(defaultMode); // Close hone pe reset ho jaye
+    if (isOpen) {
+      setMode(defaultMode);
     }
   }, [isOpen, defaultMode]);
 

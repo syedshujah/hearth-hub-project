@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Home, Plus, List, Heart, User, Settings, LogOut, Building2 } from "lucide-react";
+import { Home, Plus, List, Heart, LogOut, Building2 } from "lucide-react";
 
 interface UserSidebarProps {
   activeTab: string;
@@ -13,7 +13,6 @@ const UserSidebar = ({ activeTab, setActiveTab }: UserSidebarProps) => {
     { id: "add-property", label: "Add Property", icon: Plus },
     { id: "my-listings", label: "My Listings", icon: List },
     { id: "saved", label: "Saved Properties", icon: Heart },
-    { id: "profile", label: "Profile Settings", icon: User },
   ];
 
   return (

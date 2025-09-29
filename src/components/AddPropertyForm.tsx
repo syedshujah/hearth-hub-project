@@ -12,7 +12,8 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectLastMessage } from "@/store/selectors";
 import { createPropertyWithNotification } from "@/store/propertyThunks";
 import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { Upload, ImagePlus, X, Trash2 } from "lucide-react";
+import AuthModal from "@/components/auth/AuthModal";
+import { Upload, ImagePlus, X, Trash2, MapPin, LogIn, UserPlus } from "lucide-react";
 
 const AddPropertyForm = () => {
   const [formData, setFormData] = useState({
@@ -31,11 +32,17 @@ const AddPropertyForm = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
-  const { user, profile } = useLocalAuth();
+  const { user, profile, isAuthenticated } = useLocalAuth();
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [mapImage, setMapImage] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mapImageInputRef = useRef<HTMLInputElement>(null);
   const lastMessage = useAppSelector(selectLastMessage);
+
+  // Auth modal state
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
 
   const propertyTypes = ["house", "apartment", "condo", "villa"];
   const statusOptions = ["for-sale", "for-rent"];
@@ -46,6 +53,18 @@ const AddPropertyForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Require authentication before submitting
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign up or log in to add a property.",
+        variant: "destructive"
+      });
+      handleAuthClick("signup");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -77,6 +96,7 @@ const AddPropertyForm = () => {
         longitude: null,
         amenities: formData.features,
         images: previews, // Use the preview URLs as images
+        map_image: mapImage, // Add map image
       };
 
       // Create property using Redux with notification
@@ -119,6 +139,7 @@ const AddPropertyForm = () => {
       // Reset images and previews
       setImages([]);
       setPreviews([]);
+      setMapImage("");
       
     } catch (error) {
       console.error('Error adding property:', error);
@@ -200,6 +221,48 @@ const AddPropertyForm = () => {
     setPreviews([]);
   };
 
+  // Map image upload handler
+  const handleMapImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid File",
+        description: "Please select an image file for the map.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const base64 = await convertToBase64(file);
+      setMapImage(base64);
+      toast({
+        title: "Map Image Added",
+        description: "Map image has been uploaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload map image. Please try again.",
+        variant: "destructive"
+      });
+    }
+    
+    // Reset input
+    e.target.value = "";
+  };
+
+  const removeMapImage = () => {
+    setMapImage("");
+  };
+
+  // Auth modal handlers
+  const handleAuthClick = (mode: "login" | "signup") => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
+  };
 
   // Listen to Redux messages
   useEffect(() => {
@@ -211,6 +274,55 @@ const AddPropertyForm = () => {
       });
     }
   }, [lastMessage, toast]);
+
+  // Show authentication required message if user is not authenticated
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Card className="property-card max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <LogIn className="w-5 h-5" />
+              <span>Authentication Required</span>
+            </CardTitle>
+            <CardDescription>
+              You need to be logged in to add a property listing.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center space-y-4">
+              <p className="text-muted-foreground">
+                Please sign up or log in to start listing your properties.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => handleAuthClick("signup")}
+                  className="flex items-center space-x-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Get Started</span>
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => handleAuthClick("login")}
+                  className="flex items-center space-x-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <AuthModal 
+          isOpen={authModalOpen} 
+          onClose={() => setAuthModalOpen(false)} 
+          defaultMode={authMode} 
+        />
+      </>
+    );
+  }
 
   return (
     <Card className="property-card">
@@ -423,6 +535,59 @@ const AddPropertyForm = () => {
               ))}
             </div>
           )}
+
+          {/* Map Image Upload */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Location Map Image (Optional)</Label>
+              {mapImage && (
+                <Button type="button" variant="outline" size="sm" onClick={removeMapImage}>
+                  <X className="w-4 h-4 mr-2" />
+                  Remove Map
+                </Button>
+              )}
+            </div>
+
+            {!mapImage ? (
+              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/40 transition-colors">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-10 h-10 bg-success/10 text-success rounded-full flex items-center justify-center">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Upload a map image to show the property location
+                    </p>
+                    <Button type="button" variant="secondary" onClick={() => mapImageInputRef.current?.click()}>
+                      <ImagePlus className="w-4 h-4 mr-2" />
+                      Select Map Image
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">PNG, JPG up to ~10MB</p>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <img 
+                  src={mapImage} 
+                  alt="Property location map" 
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+                <div className="absolute top-2 left-2 bg-success/90 text-white px-2 py-1 rounded text-xs">
+                  Map Image Added
+                </div>
+              </div>
+            )}
+            
+            <input
+              ref={mapImageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleMapImageUpload}
+            />
+          </div>
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Adding Property..." : "Add Property"}
           </Button>

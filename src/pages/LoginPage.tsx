@@ -1,31 +1,50 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useLocalAuth } from "@/contexts/LocalAuthContext";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { signIn, isAuthenticated } = useLocalAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const returnTo = searchParams.get('returnTo') || '/dashboard';
+      navigate(returnTo);
+    }
+  }, [isAuthenticated, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate login - replace with real authentication later
-    setTimeout(() => {
+    try {
+      const { error } = await signIn(email, password);
+
+      if (!error) {
+        // Get return URL from query params
+        const returnTo = searchParams.get('returnTo') || '/dashboard';
+        navigate(returnTo);
+      }
+    } catch (error) {
       toast({
-        title: "Welcome back!",
-        description: "You have been successfully logged in.",
+        title: "Login Failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive"
       });
-      navigate("/dashboard");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -72,7 +91,10 @@ const LoginPage = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <Link to="/signup" className="text-primary hover:underline font-medium">
+                <Link 
+                  to={`/signup${searchParams.get('returnTo') ? `?returnTo=${searchParams.get('returnTo')}` : ''}`} 
+                  className="text-primary hover:underline font-medium"
+                >
                   Sign up here
                 </Link>
               </p>

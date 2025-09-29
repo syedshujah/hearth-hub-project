@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useLocalAuth } from "@/contexts/LocalAuthContext";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +16,17 @@ const SignupPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { signUp, isAuthenticated } = useLocalAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const returnTo = searchParams.get('returnTo') || '/dashboard';
+      navigate(returnTo);
+    }
+  }, [isAuthenticated, navigate, searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -38,15 +49,25 @@ const SignupPage = () => {
 
     setLoading(true);
 
-    // Simulate signup - replace with real authentication later
-    setTimeout(() => {
-      toast({
-        title: "Account created!",
-        description: "Welcome to PropertyHub. You can now sign in.",
+    try {
+      const { error } = await signUp(formData.email, formData.password, {
+        full_name: formData.name
       });
-      navigate("/login");
+
+      if (!error) {
+        // Get return URL from query params
+        const returnTo = searchParams.get('returnTo') || '/dashboard';
+        navigate(returnTo);
+      }
+    } catch (error) {
+      toast({
+        title: "Signup Failed",
+        description: "Please try again with different credentials.",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -119,7 +140,10 @@ const SignupPage = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link to="/login" className="text-primary hover:underline font-medium">
+                <Link 
+                  to={`/login${searchParams.get('returnTo') ? `?returnTo=${searchParams.get('returnTo')}` : ''}`} 
+                  className="text-primary hover:underline font-medium"
+                >
                   Sign in here
                 </Link>
               </p>

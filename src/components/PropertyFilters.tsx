@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,7 @@ const PropertyFilters = ({ onFilterChange, allProperties }: PropertyFiltersProps
   });
 
   const [isOpen, setIsOpen] = useState(false);
+  const locationHook = useLocation();
 
   const propertyTypes = ["house", "apartment", "condo", "villa"];
   const statusOptions = ["for-sale", "for-rent"];
@@ -54,12 +56,13 @@ const PropertyFilters = ({ onFilterChange, allProperties }: PropertyFiltersProps
       );
     }
 
-    if (filters.minPrice) {
-      filtered = filtered.filter(p => p.price >= parseInt(filters.minPrice));
+    const min = filters.minPrice ? Number(filters.minPrice) : undefined;
+    const max = filters.maxPrice ? Number(filters.maxPrice) : undefined;
+    if (min !== undefined) {
+      filtered = filtered.filter(p => typeof p.price === 'number' && p.price >= min);
     }
-
-    if (filters.maxPrice) {
-      filtered = filtered.filter(p => p.price <= parseInt(filters.maxPrice));
+    if (max !== undefined) {
+      filtered = filtered.filter(p => typeof p.price === 'number' && p.price <= max);
     }
 
     if (filters.bedrooms) {
@@ -85,6 +88,37 @@ const PropertyFilters = ({ onFilterChange, allProperties }: PropertyFiltersProps
     onFilterChange(filtered);
   };
 
+  // Initialize filters from URL query params (location, type, price)
+  useEffect(() => {
+    const params = new URLSearchParams(locationHook.search);
+    const qpLocation = params.get("location") || "";
+    const qpType = params.get("type") || "";
+    const qpPrice = params.get("price") || ""; // format: "min-max" or "min+"
+
+    // Only update filters for provided params to avoid wiping user selections
+    setFilters(prev => {
+      let next = { ...prev };
+      if (qpLocation) next.location = qpLocation;
+      if (qpType) next.type = qpType;
+      if (qpPrice) {
+        const price = qpPrice.replace(/\s/g, "");
+        if (price.includes("-")) {
+          const [minStr, maxStr] = price.split("-");
+          next.minPrice = minStr || "";
+          next.maxPrice = maxStr || "";
+        } else if (price.endsWith("+")) {
+          next.minPrice = price.slice(0, -1);
+          next.maxPrice = "";
+        } else if (/^\d+$/.test(price)) {
+          // Single number: treat as max price
+          next.minPrice = "";
+          next.maxPrice = price;
+        }
+      }
+      return next;
+    });
+  }, [locationHook.search]);
+
   const clearFilters = () => {
     setFilters({
       type: "",
@@ -109,7 +143,7 @@ const PropertyFilters = ({ onFilterChange, allProperties }: PropertyFiltersProps
 
   useEffect(() => {
     applyFilters();
-  }, [filters]);
+  }, [filters, allProperties]);
 
   return (
     <div className="property-card p-6">

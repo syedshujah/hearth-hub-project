@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,20 +8,23 @@ import { Search, MapPin, Home, DollarSign } from "lucide-react";
 import heroImage from "@/assets/hero-real-estate.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const [searchData, setSearchData] = useState({
     location: "",
     type: "",
     priceRange: "",
   });
 
+
   const handleSearch = () => {
-    // Navigate to listings with search parameters
+    // Navigate to listings with search parameters (SPA-safe)
     const params = new URLSearchParams();
     if (searchData.location) params.append("location", searchData.location);
     if (searchData.type) params.append("type", searchData.type);
     if (searchData.priceRange) params.append("price", searchData.priceRange);
-    
-    window.location.href = `/listings?${params.toString()}`;
+
+    const query = params.toString();
+    navigate(query ? `/listings?${query}` : "/listings");
   };
 
   return (

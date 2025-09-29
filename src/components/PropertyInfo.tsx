@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Property } from "@/store/propertySlice";
-import { Bed, Bath, Square, MapPin, Calendar, Tag, Phone, Mail, User } from "lucide-react";
+import { Bed, Bath, Square, MapPin, Calendar, Tag } from "lucide-react";
 
 interface PropertyInfoProps {
   property: Property;
@@ -101,63 +100,6 @@ const PropertyInfo = ({ property }: PropertyInfoProps) => {
         </div>
       </div>
 
-      {/* Contact Information */}
-      {(property.contact_name || property.contact_email || property.contact_phone) && (
-        <div className="property-card p-6">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Contact Information</h2>
-          <div className="space-y-4">
-            {property.contact_name && (
-              <div className="flex items-center space-x-3">
-                <User className="w-5 h-5 text-primary" />
-                <span className="text-muted-foreground">{property.contact_name}</span>
-              </div>
-            )}
-            {property.contact_email && (
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary" />
-                <a 
-                  href={`mailto:${property.contact_email}`}
-                  className="text-primary hover:underline"
-                >
-                  {property.contact_email}
-                </a>
-              </div>
-            )}
-            {property.contact_phone && (
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary" />
-                <a 
-                  href={`tel:${property.contact_phone}`}
-                  className="text-primary hover:underline"
-                >
-                  {property.contact_phone}
-                </a>
-              </div>
-            )}
-            <div className="flex space-x-3 mt-4">
-              {property.contact_email && (
-                <Button 
-                  onClick={() => window.open(`mailto:${property.contact_email}`, '_blank')}
-                  className="flex items-center space-x-2"
-                >
-                  <Mail className="w-4 h-4" />
-                  <span>Send Email</span>
-                </Button>
-              )}
-              {property.contact_phone && (
-                <Button 
-                  variant="outline"
-                  onClick={() => window.open(`tel:${property.contact_phone}`, '_blank')}
-                  className="flex items-center space-x-2"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Call Now</span>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Map Section */}
       <div className="property-card p-6">

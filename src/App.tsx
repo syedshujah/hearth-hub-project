@@ -24,6 +24,7 @@ import BlogPage from "./pages/BlogPage";
 import BlogDetails from "./pages/BlogDetails";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +49,7 @@ const AppContent = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="/listings" element={<PropertyListings />} />
               <Route path="/property/:id" element={<PropertyDetails />} />
-              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
               <Route path="/add-property" element={<UserDashboard initialTab="add-property" />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/login" element={<LoginPage />} />
