@@ -17,6 +17,9 @@ const PropertyDetails = () => {
   const allProperties = useAppSelector(state => state.properties.properties);
 
   useEffect(() => {
+    // Scroll to top when component mounts or ID changes
+    window.scrollTo(0, 0);
+    
     if (property && id) {
       dispatch(incrementViews(property.id));
     }

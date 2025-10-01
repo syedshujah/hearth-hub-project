@@ -47,7 +47,8 @@ export const initializeSampleData = () => {
   // Only add sample data if no properties exist
   if (state.properties.properties.length === 0) {
     sampleProperties.forEach(property => {
-      store.dispatch(addProperty(property));
+      // Add sample properties with a dummy owner_id so they don't appear in user dashboards
+      store.dispatch(addProperty({ ...property, owner_id: 'demo-user' }));
     });
     console.log('Sample properties added to Redux store');
   }

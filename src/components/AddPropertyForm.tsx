@@ -97,6 +97,7 @@ const AddPropertyForm = () => {
         amenities: formData.features,
         images: previews, // Use the preview URLs as images
         map_image: mapImage, // Add map image
+        owner_id: user?.id || 'local-user', // Associate property with current user
       };
 
       // Create property using Redux with notification

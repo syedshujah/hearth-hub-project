@@ -84,3 +84,27 @@ export const selectPropertiesCount = createSelector(
   [selectApprovedProperties],
   (properties) => properties.length
 );
+
+// Get properties by owner ID (for user dashboard)
+export const selectPropertiesByOwner = (ownerId: string | null | undefined) =>
+  createSelector(
+    [selectProperties],
+    (properties) => {
+      // If no ownerId provided (user not authenticated), return empty array
+      if (!ownerId) return [];
+      return properties.filter(property => property.owner_id === ownerId);
+    }
+  );
+
+// Get approved properties by owner ID
+export const selectApprovedPropertiesByOwner = (ownerId: string | null | undefined) =>
+  createSelector(
+    [selectProperties],
+    (properties) => {
+      // If no ownerId provided (user not authenticated), return empty array
+      if (!ownerId) return [];
+      return properties.filter(property => 
+        property.owner_id === ownerId && property.status === 'approved'
+      );
+    }
+  );

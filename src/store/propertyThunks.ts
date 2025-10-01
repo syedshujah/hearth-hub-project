@@ -8,7 +8,7 @@ import { generateRealisticMapImage } from '@/utils/mapUtils';
 // Thunk for creating property with notification
 export const createPropertyWithNotification = createAsyncThunk<
   void,
-  { propertyData: PropertyFormData; userId?: string; userProfile?: any },
+  { propertyData: PropertyFormData & { owner_id?: string }; userId?: string; userProfile?: any },
   { dispatch: AppDispatch; state: RootState }
 >(
   'properties/createWithNotification',
@@ -26,11 +26,13 @@ export const createPropertyWithNotification = createAsyncThunk<
       // Add map image
       map_image: mapImage,
       // Add map to images array
-      images: [...propertyData.images, mapImage]
+      images: [...propertyData.images, mapImage],
+      // Ensure owner_id is set
+      owner_id: propertyData.owner_id || userId || 'local-user'
     };
     
     // Add the property with enhanced data
-    dispatch(addProperty(enhancedPropertyData as PropertyFormData));
+    dispatch(addProperty(enhancedPropertyData as PropertyFormData & { owner_id: string }));
     
     // Get the newly created property (it will be the first one since we unshift)
     const state = getState();

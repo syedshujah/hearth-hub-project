@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { selectApprovedProperties, selectLastMessage } from "@/store/selectors";
+import { selectPropertiesByOwner, selectLastMessage } from "@/store/selectors";
 import { updateProperty, deleteProperty, clearMessage } from "@/store/propertySlice";
 import { Property, PropertyFormData } from "@/store/propertySlice";
 import { updatePropertyWithNotification, deletePropertyWithNotification } from "@/store/propertyThunks";
@@ -20,8 +20,9 @@ import { Search, Edit, Trash2, MapPin, Bed, Bath, Square, Calendar, Eye } from "
 const ManagePropertiesRedux = () => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
-  const { user } = useLocalAuth();
-  const properties = useAppSelector(selectApprovedProperties);
+  const { user, isAuthenticated } = useLocalAuth();
+  // Only pass user ID if authenticated, otherwise pass null to get empty array
+  const properties = useAppSelector(selectPropertiesByOwner(isAuthenticated ? user?.id : null));
   const lastMessage = useAppSelector(selectLastMessage);
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -145,6 +146,22 @@ const ManagePropertiesRedux = () => {
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString()}`;
   };
+
+  // Show authentication required message if user is not signed in
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Authentication Required</h3>
+            <p className="text-muted-foreground">
+              Please sign in to view and manage your property listings.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

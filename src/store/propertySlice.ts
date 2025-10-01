@@ -93,14 +93,14 @@ const propertySlice = createSlice({
     },
 
     // Add new property
-    addProperty: (state, action: PayloadAction<PropertyFormData>) => {
+    addProperty: (state, action: PayloadAction<PropertyFormData & { owner_id?: string }>) => {
       const newProperty: Property = {
         id: generateId(),
         ...action.payload,
         address: action.payload.location,
         latitude: null,
         longitude: null,
-        owner_id: 'local-user', // Since we're not using auth, use a default owner
+        owner_id: action.payload.owner_id || 'local-user', // Use provided owner_id or default
         views: 0,
         featured: false,
         status: 'approved',
