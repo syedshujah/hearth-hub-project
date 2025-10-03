@@ -80,10 +80,10 @@ const AboutPage = () => {
                   Browse Properties
                 </a>
                 <a 
-                  href="/contact" 
+                  href="/complaints" 
                   className="inline-flex items-center justify-center px-8 py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary hover:text-white transition-colors"
                 >
-                  Contact Us
+                  Submit Complaint
                 </a>
               </div>
             </div>

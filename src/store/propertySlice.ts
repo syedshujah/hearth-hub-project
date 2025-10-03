@@ -93,7 +93,7 @@ const propertySlice = createSlice({
     },
 
     // Add new property
-    addProperty: (state, action: PayloadAction<PropertyFormData & { owner_id?: string }>) => {
+    addProperty: (state, action: PayloadAction<PropertyFormData & { owner_id?: string; featured?: boolean }>) => {
       const newProperty: Property = {
         id: generateId(),
         ...action.payload,
@@ -102,7 +102,7 @@ const propertySlice = createSlice({
         longitude: null,
         owner_id: action.payload.owner_id || 'local-user', // Use provided owner_id or default
         views: 0,
-        featured: false,
+        featured: action.payload.featured || false,
         status: 'approved',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -205,6 +205,14 @@ const propertySlice = createSlice({
       state.loading = false;
       state.error = null;
     },
+
+    // Clear all properties (for resetting data)
+    clearProperties: (state) => {
+      state.properties = [];
+      state.loading = false;
+      state.error = null;
+      state.lastMessage = { type: null, message: '' };
+    },
   },
 });
 
@@ -221,6 +229,7 @@ export const {
   incrementViews,
   searchProperties,
   loadProperties,
+  clearProperties,
 } = propertySlice.actions;
 
 export default propertySlice.reducer;

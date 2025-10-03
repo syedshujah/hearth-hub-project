@@ -19,7 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import AboutPage from "./pages/AboutPage";
-import ContactPage from "./pages/ContactPage";
+import ComplaintPage from "./pages/ComplaintPage";
 import BlogPage from "./pages/BlogPage";
 import BlogDetails from "./pages/BlogDetails";
 import AuthCallback from "./pages/AuthCallback";
@@ -55,7 +55,7 @@ const AppContent = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/complaints" element={<ComplaintPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:id" element={<BlogDetails />} />
               <Route path="/auth/callback" element={<AuthCallback />} />

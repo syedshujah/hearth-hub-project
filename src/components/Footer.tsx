@@ -7,7 +7,7 @@ const Footer = () => {
   const quickLinks = [
     { name: "Properties", path: "/listings" },
     { name: "About Us", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: "Complaints", path: "/complaints" },
     { name: "Blog", path: "/blog" },
   ];
 
@@ -15,7 +15,7 @@ const Footer = () => {
     { name: "Buy Property", path: "/listings?type=sale" },
     { name: "Rent Property", path: "/listings?type=rent" },
     { name: "Sell Property", path: "/dashboard" },
-    { name: "Property Management", path: "/contact" },
+    { name: "Property Management", path: "/complaints" },
   ];
 
   const socialLinks = [

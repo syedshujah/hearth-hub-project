@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useLocalAuth } from "@/contexts/LocalAuthContext";
 import AuthModal from "@/components/auth/AuthModal";
 import { getEmailInitials } from "@/utils/avatar";
-import { Menu, X, Home, Building2, User, Phone, BookOpen, Settings, Plus, LogOut, UserCircle } from "lucide-react";
+import { Building2, User, BookOpen, AlertTriangle, Plus, Menu, X, Home, UserCircle, Settings, LogOut } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +22,7 @@ const Navbar = () => {
     { name: "Properties", path: "/listings", icon: Building2 },
     { name: "About", path: "/about", icon: User },
     { name: "Blog", path: "/blog", icon: BookOpen },
-    { name: "Contact", path: "/contact", icon: Phone },
+    { name: "Complaints", path: "/complaints", icon: AlertTriangle },
     { name: "Add Property", path: "/add-property", icon: Plus },
   ];
 
